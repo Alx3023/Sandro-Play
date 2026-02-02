@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>SANDRO PLAY pro</title>
+
+  <!-- PWA / iPad -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="apple-touch-icon" href="icon-512.png">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: #05070b;
+      color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      background: linear-gradient(90deg, #05070b, #101522, #05070b);
+      border-bottom: 1px solid #222;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 22px;
+      position: relative;
+    }
+
+    .logo span.sandro {
+      color: #ffffff;
+    }
+
+    .logo span.play {
+      color: #00d4ff;
+      position: relative;
+    }
+
+    .logo span.pro-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: #ff1b1b;
+      color: #fff;
+      border-radius: 3px;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-left: 2px;
+      position: relative;
+      top: -4px;
+    }
+
+    .logo-anim {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-left: 6px;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #00d4ff);
+      box-shadow: 0 0 10px #00d4ff;
+      animation: pulse 1.4s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%   { transform: scale(0.8); opacity: 0.4; }
+      50%  { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0.8); opacity: 0.4; }
+    }
+
+    header .right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .file-input-label {
+      background: #101522;
+      border-radius: 4px;
+      padding: 6px 12px;
+      border: 1px solid #2b3244;
+      cursor: pointer;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+    }
+
+    .file-input-label:hover {
+      background: #151b2a;
+      border-color: #00d4ff;
+      transform: translateY(-1px);
+    }
+
+    .file-input-label span {
+      font-weight: 500;
+    }
+
+    #playlistFile {
+      display: none;
+    }
+
+    .btn {
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #2b3244;
+      background: #101522;
+      color: #f5f5f5;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+    }
+
+    .btn:hover {
+      background: #151b2a;
+      border-color: #00d4ff;
+      transform: translateY(-1px);
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 260px 1fr 260px;
+      gap: 10px;
+      padding: 10px;
+      min-height: 0;
+    }
+
+    .panel {
+      background: radial-gradient(circle at top, #151b2a 0, #05070b 55%);
+      border-radius: 8px;
+      border: 1px solid #222838;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .panel h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9fa7c5;
+      margin-bottom: 6px;
+    }
+
+    #savedPlaylists {
+      list-style: none;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+
+    #savedPlaylists li {
+      padding: 6px 8px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      background: rgba(10, 14, 25, 0.9);
+      border: 1px solid #222838;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+
+    #savedPlaylists li:hover {
+      background: #151b2a;
+      border-color: #00d4ff;
+      transform: translateY(-1px);
+    }
+
+    #savedPlaylists li span.name {
+      max-width: 140px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #savedPlaylists li button {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: none;
+      background: #ff1b1b;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .player-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 100%;
+    }
+
+    #mainVideo {
+      width: 100%;
+      height: 100%;
+      max-height: calc(100vh - 180px);
+      background: #000;
+      border-radius: 8px;
+      border: 1px solid #222838;
+    }
+
+    .now-playing {
+      font-size: 12px;
+      color: #9fa7c5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .now-playing span.title {
+      max-width: 70%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #channelsList {
+      list-style: none;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+
+    .channel-item {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 6px;
+      padding: 6px;
+      margin-bottom: 4px;
+      border-radius: 6px;
+      background: rgba(10, 14, 25, 0.9);
+      border: 1px solid #222838;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+
+    .channel-item:hover {
+      background: #151b2a;
+      border-color: #00d4ff;
+      transform: translateY(-1px);
+    }
+
+    .channel-thumb {
+      width: 100%;
+      height: 50px;
+      border-radius: 4px;
+      background: radial-gradient(circle at 30% 30%, #2b3244, #05070b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #cfd5f0;
+      text-align: center;
+      padding: 4px;
+    }
+
+    .channel-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .channel-name {
+      font-weight: 600;
+      color: #f5f5f5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .channel-url {
+      font-size: 10px;
+      color: #9fa7c5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mini-preview {
+      margin-top: 6px;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid #222838;
+      background: #000;
+    }
+
+    #previewVideo {
+      width: 100%;
+      height: 120px;
+      background: #000;
+    }
+
+    .mini-preview-title {
+      font-size: 11px;
+      color: #9fa7c5;
+      margin-bottom: 2px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #05070b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2b3244;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3b4560;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span class="sandro">SANDRO</span>
+      <span class="play">PLAY</span>
+      <span class="pro-badge">pro</span>
+      <div class="logo-anim"></div>
+    </div>
+    <div class="right">
+      <label class="file-input-label">
+        <span>Carica lista M3U / M3U8</span>
+        <input type="file" id="playlistFile" accept=".m3u,.m3u8,text/plain" />
+      </label>
+      <button class="btn" id="recordBtn">REC</button>
+      <button class="btn" id="clearAll">Pulisci tutte le liste</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- CANALI / ANTEPRIMA (SINISTRA) -->
+    <section class="panel">
+      <h2>Canali / Anteprima</h2>
+      <ul id="channelsList"></ul>
+      <div class="mini-preview">
+        <div class="mini-preview-title" id="previewTitle">Anteprima canale</div>
+        <video id="previewVideo" muted playsinline></video>
+      </div>
+    </section>
+
+    <!-- PLAYER (CENTRO) -->
+    <section class="panel">
+      <h2>Player</h2>
+      <div class="player-wrapper">
+        <video id="mainVideo" controls playsinline></video>
+        <div class="now-playing">
+          <span class="title" id="nowPlayingTitle">Nessun canale selezionato</span>
+          <span id="nowPlayingInfo"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- LISTE SALVATE (DESTRA) -->
+    <section class="panel">
+      <h2>Liste salvate</h2>
+      <ul id="savedPlaylists"></ul>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "SANDRO_PLAY_PRO_PLAYLISTS";
+
+    const playlistFileInput = document.getElementById("playlistFile");
+    const savedPlaylistsEl = document.getElementById("savedPlaylists");
+    const channelsListEl = document.getElementById("channelsList");
+    const mainVideo = document.getElementById("mainVideo");
+    const previewVideo = document.getElementById("previewVideo");
+    const nowPlayingTitle = document.getElementById("nowPlayingTitle");
+    const nowPlayingInfo = document.getElementById("nowPlayingInfo");
+    const previewTitle = document.getElementById("previewTitle");
+    const clearAllBtn = document.getElementById("clearAll");
+    const recordBtn = document.getElementById("recordBtn");
+
+    let playlists = loadPlaylists();
+    let currentPlaylistId = null;
+    let currentChannel = null;
+
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+
+    renderSavedPlaylists();
+
+    playlistFileInput.addEventListener("change", handleFileUpload);
+
+    clearAllBtn.addEventListener("click", () => {
+      if (confirm("Vuoi davvero cancellare tutte le liste salvate?")) {
+        playlists = [];
+        savePlaylists();
+        renderSavedPlaylists();
+        channelsListEl.innerHTML = "";
+        resetPlayers();
+      }
+    });
+
+    recordBtn.addEventListener("click", () => {
+      if (!isRecording) startRecording();
+      else stopRecording();
+    });
+
+    function startRecording() {
+      if (!mainVideo.src) {
+        alert("Seleziona un canale prima di registrare.");
+        return;
+      }
+      if (!mainVideo.captureStream) {
+        alert("La registrazione non è supportata su questo browser.");
+        return;
+      }
+
+      const stream = mainVideo.captureStream();
+      try {
+        mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+      } catch (e) {
+        alert("Impossibile iniziare la registrazione.");
+        return;
+      }
+
+      recordedChunks = [];
+      mediaRecorder.ondataavailable = e => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const safeName = (currentChannel?.name || "registrazione").replace(/[^\w\-]+/g, "_");
+        a.href = url;
+        a.download = `${safeName}_${Date.now()}.webm`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
+      mediaRecorder.start();
+      isRecording = true;
+      recordBtn.textContent = "STOP";
+      recordBtn.style.background = "#ff1b1b";
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+      }
+      isRecording = false;
+      recordBtn.textContent = "REC";
+      recordBtn.style.background = "";
+    }
+
+    function resetPlayers() {
+      mainVideo.removeAttribute("src");
+      mainVideo.load();
+      previewVideo.removeAttribute("src");
+      previewVideo.load();
+      nowPlayingTitle.textContent = "Nessun canale selezionato";
+      nowPlayingInfo.textContent = "";
+      previewTitle.textContent = "Anteprima canale";
+      currentPlaylistId = null;
+      currentChannel = null;
+    }
+
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = reader.result;
+        const channels = parseM3U(text);
+        if (channels.length === 0) {
+          alert("Nessun canale valido trovato nella lista.");
+          return;
+        }
+
+        const playlist = {
+          id: Date.now().toString(),
+          name: file.name,
+          channels
+        };
+
+        playlists.push(playlist);
+        savePlaylists();
+        renderSavedPlaylists();
+        loadPlaylist(playlist.id);
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    }
+
+    function parseM3U(content) {
+      const lines = content.split(/\r?\n/);
+      const channels = [];
+      let currentInfo = null;
+
+      for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
+
+        if (line.startsWith("#EXTINF")) {
+          const parts = line.split(",");
+          const name = parts[1] ? parts[1].trim() : "Senza nome";
+          currentInfo = { name };
+        } else if (!line.startsWith("#")) {
+          const url = line;
+          if (currentInfo) {
+            channels.push({
+              name: currentInfo.name || "Senza nome",
+              url
+            });
+            currentInfo = null;
+          } else {
+            channels.push({
+              name: "Canale",
+              url
+            });
+          }
+        }
+      }
+      return channels;
+    }
+
+    function loadPlaylists() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error("Errore nel parsing delle playlist salvate", e);
+        return [];
+      }
+    }
+
+    function savePlaylists() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(playlists));
+    }
+
+    function renderSavedPlaylists() {
+      savedPlaylistsEl.innerHTML = "";
+      if (playlists.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "Nessuna lista salvata";
+        li.style.justifyContent = "center";
+        li.style.color = "#666";
+        savedPlaylistsEl.appendChild(li);
+        return;
+      }
+
+      playlists.forEach(pl => {
+        const li = document.createElement("li");
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "name";
+        nameSpan.textContent = pl.name;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "X";
+        removeBtn.title = "Elimina lista";
+
+        li.appendChild(nameSpan);
+        li.appendChild(removeBtn);
+
+        li.addEventListener("click", (e) => {
+          if (e.target === removeBtn) return;
+          loadPlaylist(pl.id);
+        });
+
+        removeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (confirm(`Eliminare la lista "${pl.name}"?`)) {
+            playlists = playlists.filter(p => p.id !== pl.id);
+            savePlaylists();
+            renderSavedPlaylists();
+            if (currentPlaylistId === pl.id) {
+              channelsListEl.innerHTML = "";
+              resetPlayers();
+            }
+          }
+        });
+
+        savedPlaylistsEl.appendChild(li);
+      });
+    }
+
+    function loadPlaylist(id) {
+      const playlist = playlists.find(p => p.id === id);
+      if (!playlist) return;
+      currentPlaylistId = id;
+      renderChannels(playlist.channels);
+    }
+
+    function renderChannels(channels) {
+      channelsListEl.innerHTML = "";
+      channels.forEach((ch, index) => {
+        const li = document.createElement("li");
+        li.className = "channel-item";
+
+        const thumb = document.createElement("div");
+        thumb.className = "channel-thumb";
+        thumb.textContent = "Anteprima";
+
+        const info = document.createElement("div");
+        info.className = "channel-info";
+
+        const nameEl = document.createElement("div");
+        nameEl.className = "channel-name";
+        nameEl.textContent = ch.name || `Canale ${index + 1}`;
+
+        const urlEl = document.createElement("div");
+        urlEl.className = "channel-url";
+        urlEl.textContent = ch.url;
+
+        info.appendChild(nameEl);
+        info.appendChild(urlEl);
+
+        li.appendChild(thumb);
+        li.appendChild(info);
+
+        li.addEventListener("click", () => {
+          playChannel(ch);
+        });
+
+        li.addEventListener("mouseenter", () => {
+          previewChannel(ch);
+        });
+
+        channelsListEl.appendChild(li);
+      });
+    }
+
+    function playChannel(channel) {
+      currentChannel = channel;
+      mainVideo.src = channel.url;
+      mainVideo.play().catch(() => {});
+      nowPlayingTitle.textContent = channel.name || "Canale";
+      nowPlayingInfo.textContent = channel.url;
+    }
+
+    function previewChannel(channel) {
+      previewTitle.textContent = channel.name || "Anteprima canale";
+      previewVideo.src = channel.url;
+      previewVideo.play().catch(() => {});
+    }
+
+    // Registrazione service worker per PWA
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").catch(console.error);
+    }
+  </script>
+</body>
+</html>
